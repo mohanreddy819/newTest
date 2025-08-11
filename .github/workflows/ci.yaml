@@ -1,13 +1,9 @@
-name: Build, Test, and Analyze
+name: Flyway migration and SonarCloud
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   build-and-analyze:
     name: Build, Test & Analyze
