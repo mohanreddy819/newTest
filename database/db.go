@@ -20,34 +20,22 @@ func ConnectDB() {
 
 	fmt.Println("DB connected successfully..")
 
-	CreateTables()
+	// CreateTables()
 
 }
 
-func CreateTables() {
-	UserTable := `CREATE TABLE IF NOT EXISTS users(
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	username TEXT NOT NULL UNIQUE,
-	password TEXT NOT NULL,
-	email TEXT NOT NULL UNIQUE);`
+// no need of this as we will use flyway to create the tables
+// func CreateTables() {
+// TodoTable := `CREATE TABLE IF NOT EXISTS todos(
+// id INTEGER PRIMARY KEY AUTOINCREMENT,
+// user_id INTEGER NOT NULL,
+// title TEXT NOT NULL,
+// completed BOOLEAN NOT NULL DEFAULT 0,
+// FOREIGN KEY(user_id) REFERENCES users(id));`
+// _, TodoTableErr := DB.Exec(TodoTable)
+// if TodoTableErr != nil {
+// 	fmt.Println(TodoTableErr)
+// 	panic("todos table not created error..")
+// }
 
-	TodoTable := `CREATE TABLE IF NOT EXISTS todos(
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	user_id INTEGER NOT NULL,
-	title TEXT NOT NULL,
-	completed BOOLEAN NOT NULL DEFAULT 0,
-	FOREIGN KEY(user_id) REFERENCES users(id));`
-
-	// command for creating the tables
-	_, Err := DB.Exec(UserTable)
-	if Err != nil {
-		fmt.Println(Err)
-		panic("user table not created error..")
-	}
-	_, TodoTableErr := DB.Exec(TodoTable)
-	if TodoTableErr != nil {
-		fmt.Println(TodoTableErr)
-		panic("todos table not created error..")
-	}
-
-}
+// }

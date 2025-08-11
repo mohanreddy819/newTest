@@ -8,7 +8,6 @@ import (
 )
 
 type Todo struct {
-	User_id   int    `json:"user_id"`
 	Title     string `json:"title"`
 	Completed bool   `json:"completed"`
 }
@@ -26,8 +25,8 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// inserting into sql database
-	query := "INSERT INTO todos(user_id, title, completed) VALUES (?,?,?)"
-	_, insertErr := database.DB.Exec(query, todo.User_id, todo.Title, todo.Completed)
+	query := "INSERT INTO todos(title, completed) VALUES (?,?,?)"
+	_, insertErr := database.DB.Exec(query, todo.Title, todo.Completed)
 	if insertErr != nil {
 		http.Error(w, "Internal service error..", http.StatusInternalServerError)
 		return

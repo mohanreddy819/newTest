@@ -1,0 +1,40 @@
+name: build and test
+on:
+    push:
+        branches:
+            - main
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v4
+            - name: set up Go
+              uses: actions/setup-go@v4
+              with:
+                go-version: '1.23'
+            - name: install dependencies
+              run: go mod download
+            - name: Install Flyway
+              run: |
+                curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.15.0/flyway-commandline-10.15.0-linux-x64.tar.gz -o flyway.tar.gz
+                tar -xzf flyway.tar.gz
+                sudo mv flyway-*/flyway /usr/local/bin/
+
+            - name: Run Flyway migrations
+              run: |
+                flyway -url=jdbc:sqlite:./todo.db -locations=filesystem:./migrations migrate
+            # - name: SonarQube Scan
+            #   uses: sonarsource/sonarcloud-github-action@v2
+            #   env:
+            #     SONAR_HOST_URL: 
+                # SONAR_TOKEN: 
+            #   with:
+            #     projectBaseDir: .
+            - name: SonarCloud Scan
+              uses: SonarSource/sonarcloud-github-action@master
+              with:
+                args: >
+                    -Dsonar.organization=${{ secrets.SONAR_ORG }}
+                    -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+                    -Dsonar.token=${{ secrets.SONAR_TOKEN }}

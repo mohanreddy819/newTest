@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"todo/database"
@@ -9,47 +9,20 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func DeleteTask(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Only Delete Method Allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	// task_id_string := r.URL.Query().Get("task_id")
+func DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	UserID, strErr := strconv.Atoi(vars["user_id"])
-	if strErr != nil {
-		http.Error(w, "there was an error parsing the data try again..", http.StatusBadRequest)
-		return
-	}
-	TaskID, strTaskErr := strconv.Atoi(vars["task_id"])
-	if strTaskErr != nil {
-		http.Error(w, "there was an error parsing the data try again..", http.StatusBadRequest)
-		return
-	}
-	checkUser := "SELECT EXISTS(SELECT 1 FROM users WHERE id=?)"
-	var conf bool
-	confErr := database.DB.QueryRow(checkUser, UserID).Scan(&conf)
-	if confErr != nil {
-		http.Error(w, "The database error..", http.StatusInternalServerError)
-		return
-	}
-	if !conf {
-		http.Error(w, "The does not exists...", http.StatusNotFound)
+	taskID, err := strconv.Atoi(vars["task_id"])
+	if err != nil {
+		http.Error(w, "Invalid task ID", http.StatusBadRequest)
 		return
 	}
 
-	// task_id, errConv := strconv.Atoi(task_id_string)
-	// if errConv != nil {
-	// 	http.Error(w, "Bad ID request", http.StatusBadRequest)
-	// 	return
-	// }
-
-	query := "DELETE FROM todos WHERE id=?"
-	_, sqErr := database.DB.Exec(query, TaskID)
-	if sqErr != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		fmt.Println(sqErr)
+	_, err = database.DB.Exec("DELETE FROM todo WHERE id = ?", taskID)
+	if err != nil {
+		http.Error(w, "Database delete failed", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("task delete success..")
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Todo deleted"})
 }
