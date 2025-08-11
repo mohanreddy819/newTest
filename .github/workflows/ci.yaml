@@ -16,7 +16,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          # SonarCloud needs a full clone to analyze history
+            # sonar cloud needs full history to analyze
           fetch-depth: 0
 
       - name: Set up Go
@@ -33,20 +33,18 @@ jobs:
           tar -xzf flyway.tar.gz
 
       - name: Run Flyway migrations
-        # Call the flyway executable directly from its extracted folder
         run: ./flyway-10.15.0/flyway -url=jdbc:sqlite:./todo.db -locations=filesystem:./migrations migrate
 
       - name: Run tests with coverage
         run: go test -v -coverprofile=coverage.out ./...
 
       - name: SonarCloud Scan
-        # Use a specific version like @v2 instead of @master
         uses: SonarSource/sonarcloud-github-action@v2
         env:
-          # GITHUB_TOKEN is required for SonarCloud to decorate PRs
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # SONAR_TOKEN authenticates with the SonarCloud service
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          # it automatically gets the remaining details from sonar-project.properties
 
 # name: build and test
 # on:
