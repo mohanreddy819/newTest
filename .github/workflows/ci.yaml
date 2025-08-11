@@ -1,40 +1,87 @@
-name: build and test
-on:
-    push:
-        branches:
-            - main
-jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: checkout code
-              uses: actions/checkout@v4
-            - name: set up Go
-              uses: actions/setup-go@v4
-              with:
-                go-version: '1.23'
-            - name: install dependencies
-              run: go mod download
-            - name: Install Flyway
-              run: |
-                curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.15.0/flyway-commandline-10.15.0-linux-x64.tar.gz -o flyway.tar.gz
-                tar -xzf flyway.tar.gz
-                sudo mv flyway-*/flyway /usr/local/bin/
+name: Build, Test, and Analyze
 
-            - name: Run Flyway migrations
-              run: |
-                flyway -url=jdbc:sqlite:./todo.db -locations=filesystem:./migrations migrate
-            # - name: SonarQube Scan
-            #   uses: sonarsource/sonarcloud-github-action@v2
-            #   env:
-            #     SONAR_HOST_URL: 
-                # SONAR_TOKEN: 
-            #   with:
-            #     projectBaseDir: .
-            - name: SonarCloud Scan
-              uses: SonarSource/sonarcloud-github-action@master
-              with:
-                args: >
-                    -Dsonar.organization=${{ secrets.SONAR_ORG }}
-                    -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-                    -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-analyze:
+    name: Build, Test & Analyze
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # SonarCloud needs a full clone to analyze history
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install Dependencies
+        run: go mod tidy
+
+      - name: Install Flyway
+        run: |
+          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.15.0/flyway-commandline-10.15.0-linux-x64.tar.gz -o flyway.tar.gz
+          tar -xzf flyway.tar.gz
+
+      - name: Run Flyway migrations
+        # Call the flyway executable directly from its extracted folder
+        run: ./flyway-10.15.0/flyway -url=jdbc:sqlite:./todo.db -locations=filesystem:./migrations migrate
+
+      - name: Run tests with coverage
+        run: go test -v -coverprofile=coverage.out ./...
+
+      - name: SonarCloud Scan
+        # Use a specific version like @v2 instead of @master
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          # GITHUB_TOKEN is required for SonarCloud to decorate PRs
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # SONAR_TOKEN authenticates with the SonarCloud service
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+# name: build and test
+# on:
+#     push:
+#         branches:
+#             - main
+# jobs:
+#     build:
+#         runs-on: ubuntu-latest
+#         steps:
+#             - name: checkout code
+#               uses: actions/checkout@v4
+#             - name: set up Go
+#               uses: actions/setup-go@v4
+#               with:
+#                 go-version: '1.23'
+#             - name: install dependencies
+#               run: go mod download
+#             - name: Install Flyway
+#               run: |
+#                 curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.15.0/flyway-commandline-10.15.0-linux-x64.tar.gz -o flyway.tar.gz
+#                 tar -xzf flyway.tar.gz
+#                 sudo mv flyway-*/flyway /usr/local/bin/
+
+#             - name: Run Flyway migrations
+#               run: |
+#                 flyway -url=jdbc:sqlite:./todo.db -locations=filesystem:./migrations migrate
+#             # - name: SonarQube Scan
+#             #   uses: sonarsource/sonarcloud-github-action@v2
+#             #   env:
+#             #     SONAR_HOST_URL: 
+#                 # SONAR_TOKEN: 
+#             #   with:
+#             #     projectBaseDir: .
+#             - name: SonarCloud Scan
+#               uses: SonarSource/sonarcloud-github-action@master
+#               env:
+#                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
