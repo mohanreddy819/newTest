@@ -1,5 +1,5 @@
 // health.go
-package todo
+package handlers
 
 import (
 	"encoding/json"
