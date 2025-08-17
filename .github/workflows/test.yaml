@@ -1,0 +1,11 @@
+name: example
+on:
+    push:
+        branches:
+            - main
+jobs:
+    name: print
+    runs-on: ubuntu-latest
+    steps:
+        - name: print the statement
+          runs: echo "hi the before worflow is running."
