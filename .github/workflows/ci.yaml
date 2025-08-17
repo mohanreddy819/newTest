@@ -1,85 +1,66 @@
-name: Build, Test, and Analyze
+# name: Flyway migration and SonarCloud
+# run-name: Deploy to ${{inputs.deploy_target}} by @${{github.actor}}
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# jobs:
+#   build-and-analyze:
+#     name: Build, Test & Analyze
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
+#         with:
+#             # sonar cloud needs full history to analyze
+#           fetch-depth: 0
+
+#       - name: Set up Go
+#         uses: actions/setup-go@v5
+#         with:
+#           go-version: '1.23'
+
+#       - name: Install Dependencies
+#         run: go mod tidy
+
+#       - name: Install Flyway
+#         run: |
+#           curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.15.0/flyway-commandline-10.15.0-linux-x64.tar.gz -o flyway.tar.gz
+#           tar -xzf flyway.tar.gz
+
+#       - name: Run Flyway migrations
+#         run: ./flyway-10.15.0/flyway -url=jdbc:sqlite:./todo.db -locations=filesystem:./migrations migrate
+
+#       - name: Run tests with coverage
+#         run: go test -v -coverprofile=coverage.out ./...
+
+#       - name: SonarCloud Scan
+#         uses: SonarSource/sonarcloud-github-action@v2
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#           # SONAR_TOKEN authenticates with the SonarCloud service
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#           # it automatically gets the remaining details from sonar-project.properties
+name: Temporary test
+run-name: Deploy to ${{inputs.deploy_target}} by @${{github.actor}}
+# trigger
+
+on: push: branches: - main
 
 jobs:
-  build-and-analyze:
-    name: Build, Test & Analyze
+  just-build:
+    name: building the app
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: checkout repo
         uses: actions/checkout@v4
-        with:
-            # sonar cloud needs full history to analyze
-          fetch-depth: 0
-
-      - name: Set up Go
+      - name: setup go
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
-
-      - name: Install Dependencies
-        run: go mod tidy
-
-      - name: Install Flyway
-        run: |
-          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.15.0/flyway-commandline-10.15.0-linux-x64.tar.gz -o flyway.tar.gz
-          tar -xzf flyway.tar.gz
-
-      - name: Run Flyway migrations
-        run: ./flyway-10.15.0/flyway -url=jdbc:sqlite:./todo.db -locations=filesystem:./migrations migrate
-
-      - name: Run tests with coverage
-        run: go test -v -coverprofile=coverage.out ./...
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # SONAR_TOKEN authenticates with the SonarCloud service
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          # it automatically gets the remaining details from sonar-project.properties
-
-# name: build and test
-# on:
-#     push:
-#         branches:
-#             - main
-# jobs:
-#     build:
-#         runs-on: ubuntu-latest
-#         steps:
-#             - name: checkout code
-#               uses: actions/checkout@v4
-#             - name: set up Go
-#               uses: actions/setup-go@v4
-#               with:
-#                 go-version: '1.23'
-#             - name: install dependencies
-#               run: go mod download
-#             - name: Install Flyway
-#               run: |
-#                 curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.15.0/flyway-commandline-10.15.0-linux-x64.tar.gz -o flyway.tar.gz
-#                 tar -xzf flyway.tar.gz
-#                 sudo mv flyway-*/flyway /usr/local/bin/
-
-#             - name: Run Flyway migrations
-#               run: |
-#                 flyway -url=jdbc:sqlite:./todo.db -locations=filesystem:./migrations migrate
-#             # - name: SonarQube Scan
-#             #   uses: sonarsource/sonarcloud-github-action@v2
-#             #   env:
-#             #     SONAR_HOST_URL: 
-#                 # SONAR_TOKEN: 
-#             #   with:
-#             #     projectBaseDir: .
-#             - name: SonarCloud Scan
-#               uses: SonarSource/sonarcloud-github-action@master
-#               env:
-#                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: install the required dependencies
+        uses: go mod download
