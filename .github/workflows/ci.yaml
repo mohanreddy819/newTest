@@ -46,7 +46,7 @@
 #           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 #           # it automatically gets the remaining details from sonar-project.properties
 name: Temporary test
-run-name: Deploy to ${{inputs.deploy_target}} by @${{github.actor}}
+# run-name: Deploy to ${{inputs.deploy_target}} by @${{github.actor}}
 # trigger
 
 on: 
@@ -67,3 +67,5 @@ jobs:
           go-version: '1.23'
       - name: install the required dependencies
         run: go mod download
+      - name: run the go test
+        run: go test ./... -v -coverprofile=coverage.out 
