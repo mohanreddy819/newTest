@@ -66,4 +66,4 @@ jobs:
         with:
           go-version: '1.23'
       - name: install the required dependencies
-        uses: go mod download
+        run: go mod download
