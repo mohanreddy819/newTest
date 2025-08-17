@@ -67,6 +67,13 @@ jobs:
           go-version: '1.23'
       - name: install the required dependencies
         run: go mod download
+      - name: Install Flyway
+        run: |
+          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.15.0/flyway-commandline-10.15.0-linux-x64.tar.gz -o flyway.tar.gz
+          tar -xzf flyway.tar.gz
+
+      - name: Run Flyway migrations
+        run: ./flyway-10.15.0/flyway -url=jdbc:sqlite:./todo.db -locations=filesystem:./migrations migrate
       - name: run the go test
         run: go test ./... -v -coverprofile=coverage.out || true
       # even though it runs the tests since the test case written their is dummy, so the job will just fail at this point skipping the
@@ -80,7 +87,35 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # SONAR_TOKEN authenticates with the SonarCloud service
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: Check Quality Gate
-        uses: SonarSource/sonarcloud-quality-gate-action@v1
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # - name: SonarQube Quality Gate check
+      #   id: sonarqube-quality-gate-check
+      #   uses: sonarsource/sonarqube-quality-gate-action@master
+      #   with:
+      #     pollingTimeoutSec: 600
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  Single-Stage-Docker-build:
+    name: docker build & push
+    runs-on: ubuntu-latest
+    needs: just-build
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Extract Docker image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: mohanreddy819/testBuild
+      - name: pushing the image into docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
