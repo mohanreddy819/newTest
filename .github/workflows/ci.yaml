@@ -111,7 +111,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: mohanreddy819/testBuild
-      - name: pushing the image into docker
+      - name: pushing the image into the docker
         uses: docker/build-push-action@v5
         with:
           context: .
