@@ -69,3 +69,9 @@ jobs:
         run: go mod download
       - name: run the go test
         run: go test ./... -v -coverprofile=coverage.out 
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # SONAR_TOKEN authenticates with the SonarCloud service
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
