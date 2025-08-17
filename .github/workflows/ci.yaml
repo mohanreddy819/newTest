@@ -74,7 +74,13 @@ jobs:
       # now fixing it with || true it just ignore the fail and continues.
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # SONAR_TOKEN authenticates with the SonarCloud service
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Check Quality Gate
+        uses: SonarSource/sonarcloud-quality-gate-action@v1
+        env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
